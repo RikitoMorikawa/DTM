@@ -19,6 +19,59 @@ Session ビューのスロットが既定 8 個しかない。セクションを
 プラグインは AU/VST3 が共通の場所にあるので、Logic と Ableton で**インストールし直す必要はない**。
 ただし Logic 純正音源（Studio Grand / Drum Kit Designer / Alchemy 等）は Ableton には出ない。
 
+### プロジェクトフォルダをリネーム／移動したら AbletonMCP が消えた
+
+環境設定 → Link・Tempo・MIDI のコントロールサーフェスの候補に `AbletonMCP` が出てこない。
+ログを見ると**7スロット全部が `None`** に落ちている。
+
+```
+2026-09-09T17:23:45: info: AMidiIO: Midi Remote Scripts:
+  MidiRemoteScript 1 [Control Surface="None" Input="None" Output="None"]
+  ... 7スロットすべて None
+```
+
+原因は Live のユーザーライブラリのパスが旧名のまま残っていること。Remote Scripts は
+この配下を見に行くので、フォルダ名を変えた時点で全部見えなくなる。
+
+```bash
+# 現在値の確認（GUI を開かずに分かる）
+strings ~/Library/Preferences/Ableton/Live\ 12.4.5/Library.cfg | grep ProjectPath
+#   <ProjectPath Value="/Users/apple/Music/Ableton" />   ← 存在しない旧パス
+```
+
+直し方：
+
+1. 環境設定 → **Library** → 「Ableton ユーザーライブラリの場所」を新パスに
+2. 同じ画面の「**Pack用インストールフォルダ**」も旧パスのまま残るので直す
+3. **Live を再起動**（Remote Scripts の走査は起動時にしか走らない。ここを飛ばすと候補に出ない）
+4. 環境設定 → Link・Tempo・MIDI → コントロールサーフェス 1 → `AbletonMCP`
+
+ブラウザ左「場所」に登録したフォルダ（`Library.cfg` の `UserFolderInfo`）も旧パスのまま残る。
+
+### 「メディアファイルが不明です」が自動検索で直らない
+
+プロジェクトを移動すると、**プロジェクトフォルダの外**を参照しているサンプルが切れる。
+`.als` は gzip した XML なので、何が切れているかは Live を開かずに調べられる。
+
+```python
+import gzip, re, os
+x = gzip.open(als, 'rt', encoding='utf-8', errors='replace').read()
+for p in set(re.findall(r'<Path Value="([^"]+)"', x)):
+    if not os.path.exists(p): print('✗', p)
+```
+
+`*Ableton` のように **パスに `*` を含むフォルダは「フォルダを検索」で拾えなかった**。
+確実なのは、実ファイルをプロジェクト内に置いて「プロジェクトを検索」させる方法。
+
+```bash
+mkdir -p "<Project>/Samples/Imported"
+cp "<実ファイル>" "<Project>/Samples/Imported/"
+# → 自動検索 → 「プロジェクトを検索」をオン → 開始
+```
+
+`.als` の `OriginalFileSize` と実ファイルのバイト数が一致していれば Live は同一と判断する。
+そもそも予防するなら **ファイル → すべてを収集して保存**。
+
 ## Synthesizer V
 
 ### 歌が伴奏とズレる

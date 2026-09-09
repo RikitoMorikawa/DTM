@@ -86,6 +86,69 @@ switch_to_arrangement_view / set_arrangement_time
 
 **トラック削除コマンドは無い。**
 
+## 音源の差し替えはできる（デバイスの削除はできない）
+
+`load_instrument_or_effect` は内部で `browser.load_item()` を呼ぶだけで、
+**ブラウザでダブルクリックしたのと同じ**。Live は1トラック1インストゥルメントなので、
+すでに音源が載っているトラックに読ませると**置換される**。
+
+```
+検証：捨てトラックに Analog をロード → Ample Guitar M をロード
+結果：devices は ['Ample Guitar M'] の1個。Analog は消えた
+```
+
+実例（Kontakt 8 → Ample Guitar M）:
+
+```python
+cmd('load_instrument_or_effect', {'track_index': 2,
+    'uri': 'query:Plugins#VST3:Ample%20Sound:Ample%20Guitar%20M'})
+```
+
+**オーディオエフェクトはチェーンの末尾に追加される（置換ではない）。**
+そして**デバイス削除コマンドは無い**（`delete_clip` だけ）。誤って足したら消せないので、
+未検証の URI は必ず捨てトラックで試す。ただし**トラックも削除できない**ので、
+捨てトラックの後始末はユーザーに頼むことになる。
+
+URI はブラウザから取る。推測で書くと `Browser item with URI ... not found` で落ちる。
+
+```python
+cmd('get_browser_items_at_path', {'path': 'instruments'})   # query:Synths#Analog など
+cmd('get_browser_items_at_path', {'path': 'plugins/VST3'})  # メーカー名フォルダが並ぶ
+```
+
+## 外部プラグインのパラメータは見えない
+
+| | 公開パラメータ数 |
+|---|---|
+| Ableton 純正（EQ Eight） | 84 |
+| Ableton 純正（Operator） | 195 |
+| Glue Compressor | 17 |
+| **FabFilter Pro-Q 4**（AU） | **1**（`Device On` のみ） |
+| **Ample Guitar M**（VST3 / AU 両方） | **1**（`Device On` のみ） |
+| Addictive Keys | 16（マイクレベル・センド・Master フィルタ） |
+
+**外部プラグインは設定値を書き込めない。** 公開するかどうかはプラグイン側の実装次第で、
+Addictive Keys のようにマクロを出しているものもあるが、多くは `Device On` だけ。
+つまり音色づくりを数値で詰められるのは**純正デバイスと一部のプラグインに限られる**。
+それ以外は「私が設計値を出して、ユーザーが GUI で入れる」分担になる。
+
+### 純正デバイスのパラメータは正規化値
+
+`get_device_parameters` の `min`/`max` が `0..1` のものは実単位ではない。EQ Eight の場合：
+
+```python
+freq = 10.0 * (2200.0 ** v)          # 10Hz〜22kHz の対数。v は 0..1
+Q    = 0.1  * (180.0  ** v)          # 0.1〜18 の対数
+# Filter Type は列挙値 0..7
+#   0:48dB LowCut 1:12dB LowCut 2:LowShelf 3:Bell 4:Notch 5:HighShelf 6:12dB HighCut 7:48dB HighCut
+```
+
+Gain は実 dB（-15..15）。Glue Compressor の Threshold も実 dB（-40..0）だが、
+Attack / Release / Ratio は**選択肢のインデックス**（Ratio 0,1,2 = 2:1, 4:1, 10:1）。
+
+**書いたあとは必ず読み戻して逆変換で検算する。** ただし列挙値は数値しか返らないので、
+フィルタ種別が意図どおりかは GUI で目視してもらうしかない。
+
 ## Logic Pro との比較
 
 | | Ableton Live | Logic Pro |

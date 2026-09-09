@@ -4,3 +4,4 @@
 *.wav
 *.aif
 Backup/
+__pycache__/
