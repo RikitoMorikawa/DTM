@@ -1,0 +1,6 @@
+.DS_Store
+*.als
+*.mid
+*.wav
+*.aif
+Backup/
