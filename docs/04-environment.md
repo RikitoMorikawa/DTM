@@ -39,6 +39,29 @@ sudo ln -s "/Volumes/Logic_Library/Library/Application Support/Dreamtonics" \
 
 `/Library/Audio/Plug-Ins/` のプラグイン本体（約6.4GB）は OS が場所を決めているため移動できない。
 
+## プロジェクトの保存場所（運用ルール）
+
+| DAW | 保存先 |
+|---|---|
+| **Ableton Live** | `~/Music/*Ableton/<プロジェクト名>/` — プロジェクトごとにフォルダを1つ作る |
+| **Logic Pro** | `~/Music/*Logic Pro/` |
+
+新規プロジェクトを作る／既存を移動するときは必ずこの配下に置く。
+ユーザーから「Ableton のプロジェクトを作って」と言われたら、
+保存先を聞き直さずに `~/Music/*Ableton/<名前>/` を既定とする。
+
+### フォルダ名の先頭に `*` が付いている（重要）
+
+Finder で並び順を上に固定するための命名。**シェルではグロブ文字なので必ずクォートする。**
+
+```bash
+ls "/Users/apple/Music/*Ableton/"          # ○ クォートすれば literal として通る
+ls /Users/apple/Music/*Ableton/            # ✗ グロブ展開されて一致しない
+find ~/Music -maxdepth 1 -name '*Ableton'  # ○ find のパターンもクォート必須
+```
+
+Python なら `os.path` にそのまま渡してよい（glob は使わない）。
+
 ## DAW
 
 | | 用途 |
@@ -54,13 +77,18 @@ sudo ln -s "/Volumes/Logic_Library/Library/Application Support/Dreamtonics" \
 | ドラム | **SSD5 (Steven Slate Drums 5)**, BFD3（※ライブラリ未インストール・0B） |
 | ベース | **MODO BASS** |
 | ピアノ | **Addictive Keys** |
-| ギター | Kontakt Factory Library 2（17音色）, **Session Guitarist Electric Sunburst**（パターン型） |
+| ギター | **Ample Guitar M (AGM3) 4.1.0** ← アコギ(Martin系)本命, Kontakt Factory Library 2（17音色）, **Session Guitarist Electric Sunburst**（パターン型） |
 | ストリングス | Session Strings 2 |
 | ブラス | Chris Hein Horns Pro |
 | シンセ | Serum 2, Ableton 内蔵（Analog/Drift/Wavetable/Operator/Meld 等） |
 | その他 Kontakt | Soul Sessions, Stacks, Lo-Fi Glow, Melted Vibes |
 
-**ギター専用プラグイン（Ample Guitar / Amplitube / Neural DSP 等）とアンプシミュは未所有。**
+**Ample Guitar M (AGM3) を 2026-09-09 に導入。** アコースティックギター専用音源。
+- プラグイン本体：`/Library/Audio/Plug-Ins/{VST3,Components,VST}/AGM.*`（内蔵・移動不可）
+- サンプルライブラリ 7.9GB：`/Volumes/Logic_Library/Plugins/AGM_Library`（外付け・移動済み）
+- 参照先の設定：`/Applications/Ample Sound/AGM/Configs/com.amplesound.AGM.inst.plist` の `InstDir`
+
+**エレキ用のアンプシミュ（Amplitube / Neural DSP 等）は未所有。**
 
 ## ボーカル
 
