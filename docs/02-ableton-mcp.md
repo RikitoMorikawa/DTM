@@ -9,7 +9,7 @@ Claude Code
 MCP_Server (Python)     /Volumes/Logic_Library/_mcp/ableton-mcp
     │  TCP socket 127.0.0.1:9877
     ↓
-AbletonMCP Remote Script  ~/Music/Ableton/User Library/Remote Scripts/AbletonMCP/
+AbletonMCP Remote Script  ~/Music/*Ableton/User Library/Remote Scripts/AbletonMCP/   ← 実体はこちら（* 付き）。SSD 側の同名コピーは Live が読まない
     │  Live Object Model
     ↓
 Ableton Live 12
@@ -84,7 +84,7 @@ start_playback / stop_playback / fire_clip / stop_clip / set_tempo
 switch_to_arrangement_view / set_arrangement_time
 ```
 
-**トラック削除コマンドは無い。**
+`delete_track`（2026-09-10 追加。`expected_name` で名前照合してから削除） / `get_track_meters`（全トラックの output_meter_level。Claude が「鳴っているか」を測る唯一の手段）
 
 ## 音源の差し替えはできる（デバイスの削除はできない）
 

@@ -154,3 +154,37 @@ Electric Sunburst はコードを押さえている間パターンを鳴らし�
 | Live を2回クラッシュさせた | 未検証の API を本番データに対していきなり実行した |
 
 **教訓：生成物は必ず自分で測り直す。未検証の操作は退避可能な場所で先に試す。**
+
+
+## 2026-09-10 iri "Swamp" 制作で詰まった点
+
+### 音が出ない（全部）
+Live は macOS の出力設定に追従しない。AirPods に切り替えても Live は「MacBook Pro のスピーカー」のまま。
+`Log.txt` の `Audio In Out: Output Device:` で確認 → 環境設定 → Audio で出力を選び直す。
+
+### エンジンが止まる（AirPods）
+AirPods のマイクが macOS のデフォルト入力になると通話モード（入力 24 kHz）に落ちて
+`AudioIO: No common SampleRate supported by out and input device`。Live の入力は No Device、macOS の入力は本体マイクにする。
+
+### ベースだけ鳴らない（MODO BASS）
+- MODO BASS 1.5.2 は **x86_64 のみ**。arm64 の Live では `Restored` と出ても無音。`file` で確認。
+- 所有している **MODO BASS 2 CS**（無料・arm64・'60s P-Bass）を IK Product Manager から入れる。ログインは IK Username。
+- **MODO BASS は記譜音で受ける**（白鍵が Ableton 表記 E1 = MIDI 40 から）。実音転写は **+12**。
+- 5弦の原曲（D1 = 36.7 Hz）は 4弦モデルで鳴らない → STRING タブ。
+
+### Remote Script を編集したのに反映されない
+1. 実体は `~/Music/*Ableton/User Library/...`。`~/Music/Ableton/` を見て「無い」と判断すると SSD 側の古いコピーを触ってしまう（上書きすると Live 12 対応が消える）。
+2. コマンド追加は **3箇所**（`SCRIPT_CAPABILITIES` / `elif command_type in [...]` のゲート / ハンドラ）。ゲートを忘れると `Unknown command`。
+3. 反映は Live 再起動。AppleScript の `quit` → `open -a` で Claude 側から実行できる。
+
+### 音量調整（メーターの読み方）
+`get_track_meters` の値はフェーダー目盛り（0.85 ≒ 0 dB、非線形）。dB 換算せず、目標メーター値への閉ループで合わせる。
+ゲインは EQ Eight の Output（実 dB）。`start_playback` は開始マーカーから鳴るので位置指定は再生後に。
+
+### 音色を「合わせて」と言われたとき
+外部プラグイン（Serum / Kontakt / AGM / SSD5 / MODO）は `Device On` しか公開しない。数値で作れるのは純正だけ
+（Wavetable 93、Amp 10、Cabinet 6、Pedal 10）。デバイスは削除も並べ替えも不可 → バイパスして末尾に追加。
+Electric Sunburst はパターン専用で1音ずつの MIDI には使えない。
+
+### 静かなイントロの採譜
+本編のしきい値では取りこぼし、倍音を A#/C# として拾う。区間を切り出して正規化 → basic-pitch → pYIN の音名分布で裏取り。
