@@ -169,8 +169,26 @@ Utility(Bass Mono) → EQ Eight → Glue Compressor → Limiter。
 これに気づかず Ceiling を振り続けて、出力が +1.4dB のままクリップしていた。
 **FabFilter Pro-L 2 は 17 パラメータを公開している**ので、純正 Limiter の代わりに使える。
 
-**検算は書き出したファイルを `ffmpeg -af ebur128` で測る**。Live の出力は私からは測れないので、
-1回バウンスしてもらって測定 → 補正、のループを回す。
+### 検算は Resampling 録音で（メーター推定はここで卒業）
+
+Live の実出力は **Resampling で録音すれば私から測れる**（2026-09-11 に確立）。メーター推定は ±5dB ぶれて収束しない。
+
+1. オーディオトラック `BOUNCE` → `set_input_routing` で **Resampling**、Utility を載せて **Mute=1**（帰還防止）
+2. `set_track_arm` → `set_current_song_time` → `start_playback` → **再生開始後に `set_record_mode(True)`**（パンチイン）
+   停止中に立てても 1.4 秒の断片しか残らない。読み戻しは常に False だが録音は動く
+3. `Samples/Recorded/` に増えた wav の**一番大きいもの**を `ffmpeg ebur128` と numpy で原曲の同区間と比較
+   （拍→秒は `(beat-4)*PER+DB`）
+4. **パート別 RMS は他トラックを Utility Mute にして単独録音**（原曲ステムと直接比較できる）
+
+iri Swamp サビの実測：Gtr +15.6dB / Strings +6.5dB 過多、Drums −3.1dB。
+「ドラムが小さい」の正体は**ピーク基準で揃えたせいでギターが 15dB 出すぎていた**ことだった。
+
+### マスター Glue の罠
+
+Glue（Thr −22 / 4:1 / Range 70）が全体を **15dB 潰し**、EQ Out +10 / Limiter Input 最大でも LUFS が動かなかった。
+Resampling の A/B（Glue ON −16.3 / OFF −1.5 dBFS）で判明。
+マスターの Glue は `Thr −8 / 2:1 / Range 6 / Out +1` の接着だけにし、**ラウドネスは EQ Eight の Output（実 dB）で
+リミッターに押し込む**。+3dB で原曲と一致した（−7.9 LUFS / RMS −6.9 / 全帯域 ±1.8dB）。
 
 ## 8. 各工程の検算
 

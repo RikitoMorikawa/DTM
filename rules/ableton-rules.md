@@ -99,3 +99,9 @@ Serum 2 / Kontakt / Saturn 2 / Pro-Q 4 / Ozone 10 / SSD5 / MODO BASS / BFD3   1
 
 順番を変えたいときは、古いものを `Device On = 0` でバイパスして末尾に追加し直す。
 歪みの前にリバーブが来てしまった場合はこれで回避する。
+
+## 10. 音量・音色の判断はメーターでなく Resampling 録音で
+
+`get_track_meters` はピークの粗いサンプル（毎秒 2 回）で、楽器ごとのクレストファクター差があるため
+ピーク基準で揃えるとドラムが埋もれる。**「小さい／大きい」の判断は Resampling 録音の RMS / LUFS で行う**
+（手順は `docs/08-cover-pipeline.md` §7）。マスターのデバイスが効いているか怪しいときも、推測せず ON/OFF を録って比べる。
