@@ -21,6 +21,7 @@ df -h /Volumes/Logic_Library
 ├── Plugins/
 │   ├── KONTAKT/                              Kontakt ライブラリ群
 │   ├── SSD5Library/                          Steven Slate Drums 5 (14GB)
+│   ├── BFD3 Core Library/                    BFD3 Core Library (45GB, 19,329ファイル)
 │   ├── Chris Hein Horns Pro Complete (47GB)
 │   ├── East West/
 │   └── AlterEgo_Voices/Bones_v1002/
@@ -74,7 +75,7 @@ Python なら `os.path` にそのまま渡してよい（glob は使わない）
 | 種別 | 製品 |
 |---|---|
 | サンプラー | Kontakt 7 / 8, EastWest Opus, Reaktor 6 |
-| ドラム | **SSD5 (Steven Slate Drums 5)**, BFD3（※ライブラリ未インストール・0B） |
+| ドラム | **SSD5 (Steven Slate Drums 5)**, **BFD3 3.5.0**（Core Library 45GB を SSD へ導入済み・2026-09-11） |
 | ベース | **MODO BASS** |
 | ピアノ | **Addictive Keys** |
 | ギター | **Ample Guitar M (AGM3) 4.1.0** ← アコギ(Martin系)本命, Kontakt Factory Library 2（17音色）, **Session Guitarist Electric Sunburst**（パターン型） |
@@ -112,3 +113,23 @@ iZotope Ozone 10 / Neutron 3 Elements / Nectar 3 Elements / RX 8。
 - **MIDI 標準 : C4 = MIDI 60**
 
 ユーザーに伝えるときは Ableton 表記に合わせること。
+
+## BFD3 のインストール（2026-09-11 実施）
+
+BFD は inMusic 傘下になり、**旧「BFD License Manager」は廃止**。後継は **inMusic Software Center**
+（`/Applications/inMusic Software Center.app`、arm64 対応）。ログインは inMusic Profile。
+
+1. Software Center → My Software → **BFD3 を ⋮ → Activate**（先に認証しないとライブラリだけ入れても起動時に止まる）
+2. **BFD3 Core Library → Download** → `~/Downloads/inMusic/` に zip 48.6GB が落ちて自動展開（一時的に内蔵を 45GB 使う）
+3. **Install** → ウィザードの **Data Location で必ず SSD を指定**
+   `/Volumes/Logic_Library/Plugins/BFD3 Core Library`
+   （既定は `~/Documents/BFD Drums/` で内蔵。ここを変えないと 45GB が内蔵に入る）
+4. 書き込みは約 70MB/s、**所要 14分30秒**
+5. BFD3 → ハンバーガーメニュー → **Tools → Set up content locations**
+   → **REMOVE ALL** → **ADD** で SSD のパス → **RESCAN ALL**
+   （インストーラは新パスを追加するだけで旧パスを消さない。337 エントリが二重に残る）
+6. 検算：`~/Library/Application Support/BFD Drums/BFD3/DataPaths.xml` が
+   `/Volumes/Logic_Library` だけを指していること（旧パス 0 件）
+7. 動作確認後、`~/Downloads/inMusic/` の 45GB を削除
+
+プラグイン本体（`BFD3.component` / `BFD3.vst3` v3.5.0）は arm64 ユニバーサルなので Live 12 でネイティブ動作する。
