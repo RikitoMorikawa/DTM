@@ -133,3 +133,15 @@ BFD は inMusic 傘下になり、**旧「BFD License Manager」は廃止**。�
 7. 動作確認後、`~/Downloads/inMusic/` の 45GB を削除
 
 プラグイン本体（`BFD3.component` / `BFD3.vst3` v3.5.0）は arm64 ユニバーサルなので Live 12 でネイティブ動作する。
+
+## BFD3 を Live で鳴らす（2026-09-11 実測）
+
+- **Kits タブの `.bfd3kit` を読む。Presets タブの `.bfd3` は読まない。**
+  Preset 76 個は**全部** `autoplay="true" autoplaymode="palette"` を持ち、MIDI が無くても勝手に鳴る。
+  Kit 53 個は autoplay を 1 つも持たない（全数 grep で確認）。新規インスタンスは直近に開いた
+  プログラムを復元するので、一度 Preset を開くと以後ずっと再現する。
+- BFD3 は Live に `Device On` しか公開しない → **パレット停止も Kit 選択も GUI でしかできない**。
+- 検算：MIDI が 0 発の区間で `get_track_meters` を読む。鳴っていれば autoplay。
+- **Core Library 53 キットは全部アコースティック。** `90s Hip Hop` 等も中身は生キットピース＋加工。
+  電子系は拡張パックを買うか、ユーザーキットピース（`.bfd3custkp`）で自前 WAV を入れる。
+- キーマップは GM 準拠（Ableton 表記 C1=36 キック / D1=38 スネア / F#1=42 ハット）。

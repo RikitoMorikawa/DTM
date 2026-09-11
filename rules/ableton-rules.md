@@ -105,3 +105,31 @@ Serum 2 / Kontakt / Saturn 2 / Pro-Q 4 / Ozone 10 / SSD5 / MODO BASS / BFD3   1
 `get_track_meters` はピークの粗いサンプル（毎秒 2 回）で、楽器ごとのクレストファクター差があるため
 ピーク基準で揃えるとドラムが埋もれる。**「小さい／大きい」の判断は Resampling 録音の RMS / LUFS で行う**
 （手順は `docs/08-cover-pipeline.md` §7）。マスターのデバイスが効いているか怪しいときも、推測せず ON/OFF を録って比べる。
+
+## 11. `set_device_parameter` は `parameter_name` を見ない ⚠️
+
+Remote Script のハンドラは **`parameter_index` しか受け取らない**。
+
+```python
+result = self._set_device_parameter(
+    params.get("track_index", 0), params.get("device_index", 0),
+    params.get("parameter_index", 0),      # ← parameter_name は無視される
+    params.get("value", 0.0))
+```
+
+`parameter_name` を渡すと既定値の **index 0 = Device On に書き込まれる**。
+エラーにならず成功が返るので気づけない。実際に Punish を 2 トラック分バイパスさせた。
+値が 0〜1 の外なら `Invalid value` で落ちるので、そこで初めて分かる。
+
+```python
+# ダメ（Device On が書き換わる）
+cmd('set_device_parameter', {'track_index':2,'device_index':11,
+                             'parameter_name':'Out Gain','value':0.5})
+# 正しい（get_device_parameters で index を引いてから渡す）
+i = [p['index'] for p in params if p['name']=='Out Gain'][0]
+cmd('set_device_parameter', {'track_index':2,'device_index':11,
+                             'parameter_index':i,'value':0.5})
+```
+
+**`set_master_device_param` と `set_chain_device_param` は `parameter_name` で動く。**
+この 3 つで引数の扱いが違うので、書き込んだら必ず読み戻して照合すること。
