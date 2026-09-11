@@ -133,3 +133,26 @@ cmd('set_device_parameter', {'track_index':2,'device_index':11,
 
 **`set_master_device_param` と `set_chain_device_param` は `parameter_name` で動く。**
 この 3 つで引数の扱いが違うので、書き込んだら必ず読み戻して照合すること。
+
+## 12. 自動ループは「新しいファイルができたか」を必ず確認する ⚠️
+
+Resampling 録音の閉ループで、**Live のオーディオエンジンが落ちても録音コマンドは成功を返す**。
+`Samples/Recorded/` には **92 バイト（WAV ヘッダだけ）のファイル**が作られ、
+`newest()` は前回の録音を返し続ける。結果、**同じ測定値で 3 回補正が走り**、
+EQ Output が上限 +12 / 下限 −12 に張り付いた。
+
+```
+反復1  Drums -12.1  Bass -29.2  Gtr L -30.6  Gtr R -30.6  Strum -30.6 …  ← 3本目以降が全部同じ
+反復2  全部 -30.6（Drums まで -30.6 に）                                  ← 完全に停止
+```
+
+ループには必ずこの 3 つを入れる。
+
+1. 録音前のファイル集合を取り、**新規ファイルが増えたことを確認**する（増えなければ即中断）
+2. **ファイルサイズが想定長に近いか**を見る（92 バイトは即エラー）
+3. 1 回の補正量に上限を設ける（例 6 dB）。上限・下限に張り付いたら中断する
+
+エンジン停止の見分け方は `is_playing=True` なのに **`current_song_time` が進まない**こと。
+`get_input_routings` の候補から **`Ext. In` が消えていたら**オーディオデバイスが外れている。
+原因は `docs/03-troubleshooting.md` の AirPods（macOS の入力が AirPods マイク → 24kHz の通話モード）。
+
