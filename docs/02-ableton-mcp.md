@@ -84,7 +84,27 @@ start_playback / stop_playback / fire_clip / stop_clip / set_tempo
 switch_to_arrangement_view / set_arrangement_time
 ```
 
-`delete_track`（2026-09-10 追加。`expected_name` で名前照合してから削除） / `get_track_meters`（全トラックの output_meter_level。Claude が「鳴っているか」を測る唯一の手段）
+### 自作で追加したコマンド
+
+| コマンド | 用途 |
+|---|---|
+| `delete_track` | `expected_name` で名前照合してから削除（2026-09-10） |
+| `get_track_meters` | 全トラック＋Return＋Master の `output_meter_level`。「鳴っているか」を測る唯一の手段 |
+| `get_chain_device_params` / `set_chain_device_param` | Drum Rack のパッド個別（`chain_index` 指定、パラメータは名前指定） |
+| `get_master_info` / `load_device_on_master` / `set_master_device_param` / `set_master_volume` | マスタートラック（2026-09-11） |
+
+追加は **3箇所**（`SCRIPT_CAPABILITIES` / `elif command_type in [...]` のゲート / ハンドラ本体）。
+ゲートを忘れると `Unknown command`。反映は Live 再起動。
+
+### Live の保存・再起動は Claude から実行できる
+
+アクセシビリティ権限が許可済みなので、AppleScript で操作できる。
+
+```bash
+osascript -e 'tell application "System Events" to keystroke "s" using command down'   # ⌘S
+osascript -e 'tell application "Ableton Live 12 Trial" to quit'
+open -a "Ableton Live 12 Trial" "<path>.als"
+```
 
 ## 音源の差し替えはできる（デバイスの削除はできない）
 
