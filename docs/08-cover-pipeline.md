@@ -375,3 +375,18 @@ RMS が合っていても「圧が違う」と言われる。同じ区間（音�
 - ストリングスのレベルが落ちると **Side/Mid が一緒に下がる**（一番広い要素なので）。広がりの数字は
   レベルを合わせてから読む
 
+### 純正 Sounds/Strings の中身（2026-09-12）
+
+`.adv`（Cello / Violin / Ensemble / Quartet / Pizz / Vintage …）は**全部 Tension プリセット**で、弓の遅さは同じ。
+サンプル系は `.adg` の **Ac Strings Orch / Ac Strings Pizz** — Sampler ラックでマクロに
+`Attack 0 / Release / Tone / Tremolo / Reverb` を持ち、`get_chain_device_params` で内側の ADSR も読める。
+キレが要るストリングスはこちら。`load_instrument_or_effect` で URI `query:Sounds#Strings:FileId_4824` を読めば
+GUI なしで載る（既存の音源は置き換わる）。
+
+### 採譜した「音の雲」をそのまま鳴らさない
+
+その他ステムの多重音採譜は 244 音・同時 6 声・音域 41 半音になっていて、原曲の「同時 2 音」と合わない。
+Viterbi で 2 声に絞っても跳躍 5 半音超が 36% 残った（分離ステムの限界）。
+**伴奏パートはコード進行から声部連結の規則で書く**（構成音 100%、最近接の構成音へ、下声は 3〜6 半音下）。
+実測は「リズム（セクション密度）」と「決め所のフレーズ（サビ前の上行）」にだけ使う。
+
