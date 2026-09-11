@@ -188,6 +188,8 @@ Utility(Bass Mono) → EQ Eight → Glue Compressor → Limiter。
 Live の実出力は **Resampling で録音すれば私から測れる**（2026-09-11 に確立）。メーター推定は ±5dB ぶれて収束しない。
 
 1. オーディオトラック `BOUNCE` → `set_input_routing` で **Resampling**、Utility を載せて **Mute=1**（帰還防止）
+   **フルミックスは必ず `Resampling`。入力候補にある `Main` はマスターのデバイス前（リミッター前）を拾う**
+   （同じ設定で True Peak が Main +1.7 / Resampling +0.7、2026-09-12 実測）。パート単独は各トラック名の `Post Mixer` でよい
 2. `set_track_arm` → `set_current_song_time` → `start_playback` → **再生開始後に `set_record_mode(True)`**（パンチイン）
    停止中に立てても 1.4 秒の断片しか残らない。読み戻しは常に False だが録音は動く
 3. `Samples/Recorded/` に増えた wav の**一番大きいもの**を `ffmpeg ebur128` と numpy で原曲の同区間と比較
